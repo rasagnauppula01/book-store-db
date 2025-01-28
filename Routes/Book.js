@@ -125,7 +125,7 @@ router.get("/get-book", async (req, res) => {
   // console.log('gettttt');
   
   try {
-    const book = await books.find();
+    const book = await books.findOne();
 // console.log(book,'boooookkk');
 
     if (!book) {
