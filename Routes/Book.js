@@ -122,8 +122,11 @@ router.delete(
 
 // Get All Books (No Admin Check)
 router.get("/get-book", async (req, res) => {
+  // console.log('gettttt');
+  
   try {
     const book = await books.find();
+// console.log(book,'boooookkk');
 
     if (!book) {
       return res.status(404).json({ message: "Books not found" });
