@@ -5,6 +5,8 @@ const multer = require("multer");
 const { Authentication } = require("../Routes/userAuth");
 const User = require("../Model/User");
 const uploadbook = require("../Config/MulterConfig");
+const upload = require("../Config/MulterConfig");
+const uploadOnCloudinary = require("../Config/CloudinaryConfig");
 // Middleware to check if the user is an admin
 const isAdmin = async (req, res, next) => {
   try {
@@ -27,35 +29,52 @@ const storage = multer.memoryStorage(); // Store files in memory
 // Add Book Route (Save file in the database as Buffer)
 router.post(
   "/add-books",
-  Authentication,
-  isAdmin,
-  uploadbook.single("file"),
+  upload.single("file"),
   async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ message: "File is required" });
-      }
+    // try {
+    //   if (!req.file) {
+    //     return res.status(400).json({ message: "File is required" });
+    //   }
 
-      const { title, author, price, desc, language } = req.body;
+    //   const { title, author, price, desc, language } = req.body;
 
-      // Save the Cloudinary URL in the database
-      const book = new books({
-        title,
-        author,
-        price,
-        desc,
-        language,
-        file: req.file.path, // Cloudinary URL
-      });
+    //   // Save the Cloudinary URL in the database
+    //   const book = new books({
+    //     title,
+    //     author,
+    //     price,
+    //     desc,
+    //     language,
+    //     file: req.file.path, // Cloudinary URL
+    //   });
 
-      const savedBook = await book.save();
-      return res
-        .status(200)
-        .json({ message: "Book added successfully", book: savedBook });
-    } catch (error) {
-      console.error("Error in /add-books route:", error);
-      return res.status(500).json({ message: "Internal server error" });
-    }
+    //   const savedBook = await book.save();
+    //   return res
+    //     .status(200)
+    //     .json({ message: "Book added successfully", book: savedBook });
+    // } catch (error) {
+    //   console.error("Error in /add-books route:", error);
+    //   return res.status(500).json({ message: "Internal server error" });
+    // }
+    const { title, author, price, desc, language } = req.body;
+    const {path} = req.file
+    // console.log(`${title} ${author} ${price} ${desc} ${language}`);
+    // console.log("Body: ", req.body)
+    // console.log("Files: ",req.file)
+    const response = await uploadOnCloudinary(path);
+    const file = response.url;
+   const newBook =  await books.create({
+      title,
+      author,
+      price,
+      desc,
+      language,
+      file
+     });
+
+     if(!newBook) res.status(404).json({"message": "Unable to save the book"})
+    
+    res.json({"message": "Book updated successfully."})
   }
 );
 
@@ -123,10 +142,10 @@ router.delete(
 // Get All Books (No Admin Check)
 router.get("/get-book", async (req, res) => {
   // console.log('gettttt');
-  
+
   try {
     const book = await books.find();
-// console.log(book,'boooookkk');
+    // console.log(book,'boooookkk');
 
     if (!book) {
       return res.status(404).json({ message: "Books not found" });

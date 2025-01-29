@@ -5,14 +5,17 @@ const cors = require("cors");
 require("dotenv").config();
 require("./Connection/Connection");
 const router = require("./Routes/user");
-const routers = require("./Routes/Book");
+const bookRouter = require("./Routes/Book");
 const routes = require("./Routes/Favourites");
 const cart = require("./Routes/Cart");
 const orders = require("./Routes/order");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({
+  origin:"*",
+  methods:['GET','POST',"PUT",'DELETE','UPDATE']
+}));
 
 // Apply CORS middleware
 
@@ -21,7 +24,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/", router);
-app.use("/book", routers);
+app.use("/book", bookRouter);
 app.use("/favourites", routes);
 app.use("/Cart", cart);
 app.use("/order", orders);

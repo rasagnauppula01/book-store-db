@@ -1,4 +1,8 @@
 const cloudinary = require("cloudinary").v2;
+const fs = require("fs");
+const dotenv = require("dotenv")
+
+dotenv.config();
 
 // Configure Cloudinary with your account details
 cloudinary.config({
@@ -7,4 +11,19 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-module.exports = cloudinary;
+const uploadOnCloudinary = async(localFilePath)=>{
+  try{
+    if(!localFilePath) return null;
+
+    const response = await cloudinary.uploader.upload(localFilePath, {
+      resource_type: "auto"
+    })
+    fs.unlinkSync(localFilePath);
+    return response
+  }catch(err){
+    console.error(err.message)
+    fs.unlinkSync(localFilePath);
+  }
+}
+
+module.exports = uploadOnCloudinary;

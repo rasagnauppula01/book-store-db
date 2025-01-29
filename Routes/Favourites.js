@@ -3,25 +3,30 @@ const router = express.Router();
 const { Authentication } = require("../Routes/userAuth");
 const User = require("../Model/User");
 
-router.put("/add-to-favourite", Authentication, async (req, res) => {
+router.put("/add-to-favourite", async (req, res) => {
   try {
     const { bookid, id } = req.headers;
     const userData = await User.findById(id);
+    // console.log(userData.favourites);
+    
     const isBookFavourite = userData.favourites.includes(bookid);
+    console.log(bookid)
     if (isBookFavourite) {
       return res
-        .status(400)
-        .json({ message: "Book already added to favourites" });
+        .status(300)
+        .json({ message: "Book already added to favourites",success:false});
     }
-    await User.findByIdAndUpdate(id, {
-      $push: { favourites: bookid },
-    });
+    
+     await User.findByIdAndUpdate(id,{ $addToSet: { favourites: bookid } }, // Ensures no duplicate entries
+     { new: true });
+      
     return res
       .status(200)
-      .json({ message: "Book added to favourites successfully" });
+      .json({ message: "Book added to favourites successfully",success:true});
   } catch (error) {
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error", success:false });
   }
+  
 });
 
 router.delete(
